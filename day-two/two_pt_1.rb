@@ -6,17 +6,17 @@ def generate_result(game)
   game, res = game.split(": ")
   _, id = game.split(" ").map(&:to_i)
 
+  limits = {
+    "red" => 12,
+    "green" => 13,
+    "blue" => 14
+  }
+
   pass_the_round = res.split("; ").map do |round|
     pass = true
     turn = round.split(", ").map do |t|
       count, color = t.split(" ")
-      if color == "red"
-        pass = false unless count.to_i <= 12
-      elsif color == "green"
-        pass = false unless count.to_i <= 13
-      elsif color == "blue"
-        pass = false unless count.to_i <= 14
-      end
+      pass = false if count.to_i > limits[color]
     end
     pass
   end
