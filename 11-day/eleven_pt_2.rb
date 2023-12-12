@@ -13,6 +13,8 @@ test_data ="...#......
 
 class Galaxy
   def initialize(map)
+    @empty_cols = []
+    @empty_rows = []
     @grid = parse_data(map)
     @current_number = 1
     @grid_map = replace_with_nums
@@ -20,14 +22,25 @@ class Galaxy
     @combinations = generate_combinations(@coords.keys.map(&:to_i).max)
   end
 
-  def run
+  def run(n)
     @combinations.reduce(0) do |sum, combo|
       x, y = combo
       x1, y1 = @coords[x]
       x2, y2 = @coords[y]
       x_max, x_min = [x1, x2].max, [x1, x2].min
       y_max, y_min = [y1, y2].max, [y1, y2].min
-      sum += y_max - y_min + x_max - x_min
+      
+      x_sum = 0
+      y_sum = 0
+      @empty_cols.each do |col|
+        x_sum += n - 1 if col.between?(x_min, x_max)
+      end
+
+      @empty_rows.each do |row|
+        y_sum += n - 1 if row.between?(y_min, y_max)
+      end
+      
+      sum += (y_max + x_sum - y_min) + (x_max + y_sum - x_min)
     end
   end
 
@@ -69,27 +82,16 @@ class Galaxy
 
   def parse_data(map)
     split_map = map.split("\n")
-    newer_map = []
-    split_map.each do |row|
-      new_row = row.split('').all?('.') ? [row, row]: [row]
-      newer_map << new_row
+    split_map.each_with_index do |row, idx|
+      @empty_rows << idx + 1 if row.split('').all?('.')
     end
-    newest_map = []
-    newer_map.flatten.map { |sm| sm.split('') }.transpose.each do |col|
-      new_col = col.all?('.') ? [col, col] : [col]
-      newest_map << new_col
+    split_map = split_map.flatten.map { |sm| sm.split('') }.transpose.each_with_index do |col, idx|
+      @empty_cols << idx + 1 if col.all?('.')
     end
-    final_map = []
-    newest_map.each do |np|
-      np.each do |c|
-        final_map << c
-      end
-    end
-    final_map.transpose.map(&:join)
+    split_map.transpose.map(&:join)
   end
 end
 
 test_galaxy = Galaxy.new(test_data)
 main_galaxy = Galaxy.new(File.read('main-input.txt'))
-p test_galaxy.run
-p main_galaxy.run
+p main_galaxy.run(1_000_000)
