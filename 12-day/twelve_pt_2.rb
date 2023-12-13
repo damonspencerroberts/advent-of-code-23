@@ -24,12 +24,10 @@ class Spring
 
   def replace_all_possible(nums, validation)
     count = 0
-    generate_combinations(nums, validation).size
-  end
-
-  def valid_combination?(combination, validation)
-    counts = combination.split('.').reject(&:empty?).map(&:length)
-    counts == validation
+    generate_combinations(nums, validation).each do |combination|
+      count += 1 if valid_combination?(combination, validation)
+    end
+    count
   end
 
   def generate_combinations(input, validation)
@@ -51,6 +49,11 @@ class Spring
     combinations
   end
 
+  def valid_combination?(combination, validation)
+    counts = combination.split('.').reject(&:empty?).map(&:length)
+    counts == validation
+  end
+
   private
 
   def parse_data(data)
@@ -59,11 +62,13 @@ class Spring
 
   def parse_single_row(row)
     z, v = row.split(" ")
-    [z, v.split(",").map(&:to_i)]
+    z = ((z + "?") * 5).chomp!("?")
+    v = (v.split(',').join * 5).split('').map(&:to_i)
+    [z, v]
   end
 end
 
-# test_spring = Spring.new(test_data)
-# p test_spring.run
-main_spring = Spring.new(File.read("main-input.txt"))
-p main_spring.run
+test_spring = Spring.new(test_data)
+p test_spring.run
+# main_spring = Spring.new(File.read("main-input.txt"))
+# p main_spring.run
